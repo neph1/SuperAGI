@@ -9,6 +9,7 @@ from superagi.agent.super_agi import SuperAgi
 from superagi.config.config import get_config
 from superagi.helper.encyption_helper import decrypt_data
 from superagi.lib.logger import logger
+from superagi.llms.koboldcpp import KoboldCpp
 from superagi.llms.openai import OpenAi
 from superagi.models.agent import Agent
 from superagi.models.agent_execution import AgentExecution
@@ -192,7 +193,7 @@ class AgentExecutor:
 
 
         spawned_agent = SuperAgi(ai_name=parsed_config["name"], ai_role=parsed_config["description"],
-                                 llm=OpenAi(model=parsed_config["model"], api_key=model_api_key), tools=tools,
+                                 llm=self.get_llm(model=parsed_config["model"], model_api_key=model_api_key), tools=tools,
                                  memory=memory,
                                  agent_config=parsed_config)
 
@@ -244,11 +245,11 @@ class AgentExecutor:
             if hasattr(tool, 'instructions'):
                 tool.instructions = parsed_config["instruction"]
             if hasattr(tool, 'llm') and (parsed_config["model"] == "gpt4" or parsed_config["model"] == "gpt-3.5-turbo"):
-                tool.llm = OpenAi(model="gpt-3.5-turbo", api_key=model_api_key, temperature=0.3)
+                tool.llm = self.get_llm(model="gpt-3.5-turbo", model_api_key=model_api_key, temperature=0.3)
             elif hasattr(tool, 'llm'):
-                tool.llm = OpenAi(model=parsed_config["model"], api_key=model_api_key, temperature=0.3)
+                tool.llm = self.get_llm(model=parsed_config["model"], model_api_key=model_api_key, temperature=0.3)
             if hasattr(tool, 'image_llm'):
-                tool.image_llm = OpenAi(model=parsed_config["model"], api_key=model_api_key)
+                tool.image_llm = self.get_llm(model=parsed_config["model"], model_api_key=model_api_key)
             if hasattr(tool, 'agent_id'):
                 tool.agent_id = agent_id
             if hasattr(tool, 'resource_manager'):
@@ -292,3 +293,12 @@ class AgentExecutor:
         session.add(agent_execution_feed)
         agent_execution.status = "RUNNING"
         session.commit()
+
+    def get_llm(self, model, backend='OpenAi', model_api_key='', temperature=0.3, max_tokens=get_config("MAX_MODEL_TOKEN_LIMIT")):
+        if get_config("BACKEND") == 'OpenAi':
+            return OpenAi(model=model, api_key=model_api_key, temperature=temperature, max_tokens=max_tokens)
+        elif get_config("BACKEND") == 'KoboldCpp':
+            return KoboldCpp(model=model, temperature=temperature, api_key="", max_tokens=max_tokens)
+        else :
+            logger.info("Backend not supported")
+        

@@ -47,11 +47,14 @@ class KoboldCpp(BaseLlm):
         Returns:
             dict: The response.
         """
-
+        prompt = '### Instruction:\n\n'
+        for p in messages:
+            prompt += p['content']
+        prompt += '### Response:\n\n'
         try:
             url = 'http://172.17.0.1:5001'
             api_endpoint = self.endpoint
-            data = dict(prompt = f'"{messages}"',
+            data = dict(prompt = prompt,
             max_context_length = max_tokens,
             max_length = get_config("MAX_TOOL_TOKEN_LIMIT"),
             temperature = self.temperature,

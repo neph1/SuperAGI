@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import requests
 from abc import ABC, abstractmethod
 
@@ -66,13 +67,16 @@ class KoboldCpp(BaseLlm):
             rep_pen = 1.1,
             rep_pen_range = 128,
             seed = -1,
-            stop_sequence = [],
+            stop_sequence = [']'],
+            ban_tokens = '`  ` ´ ```',
             stream_sse = 0)
 
             response = requests.post(url + api_endpoint, data=json.dumps(data))
-            if response.status_code == 200:
-                return {"response": response, "content": response.json()['results'][0]['text']}
-            return {"response": response, "content": ''}
+            print(f"response 1 {response.json()['results'][0]['text'].strip()}")
+            #if response.status_code == 200:
+            result = self.sanitize_response(f"{response.json()['results'][0]['text']}")
+            print(f"response 2 {result}")
+            return {"response": '', "content": result}
                 
         except Exception as exception:
             logger.info("Exception:", exception)
@@ -80,3 +84,7 @@ class KoboldCpp(BaseLlm):
 
     def generate_image(self, prompt: str, size: int = 512, num: int = 2):
         return {}
+
+    def sanitize_response(self, response: str):
+        response = response.replace("\n", "").replace("  ", "").replace("´", "").replace("`", "").replace("```json", "").replace("```", "").strip()
+        return response

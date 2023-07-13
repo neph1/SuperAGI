@@ -67,17 +67,30 @@ class KoboldCpp(BaseLlm):
             rep_pen = 1.1,
             rep_pen_range = 128,
             seed = -1,
-            stop_sequence = [']'],
-            ban_tokens = '`  ` ´ ```',
+            stop_sequence = [],
+            bantokens = '\\``` \\n',
             stream_sse = 0)
 
+
             response = requests.post(url + api_endpoint, data=json.dumps(data))
-            print(f"response 1 {response.json()['results'][0]['text'].strip()}")
-            #if response.status_code == 200:
-            result = self.sanitize_response(f"{response.json()['results'][0]['text']}")
-            print(f"response 2 {result}")
-            return {"response": '', "content": result}
-                
+            try:
+                result = response.json()['results'][0]['text']
+            except Exception as exception:
+                logger.info('Trying to fix response')
+                result = self.sanitize_response(response.text)
+                result = json.loads(result)
+                result = result['results'][0]['text']
+            result2 = []
+            for o in result:
+                if o is str:
+                    result2.append(o)
+                if o.get('task'):
+                    result2.append(o.get('task'))
+                elif o.get('TASK'):
+                    result2.append(o.get('TASK'))
+                else:
+                    result2.append(o)
+            return {"response": '', "content": json.dumps(result2)}
         except Exception as exception:
             logger.info("Exception:", exception)
             return {"error": exception}
@@ -86,5 +99,5 @@ class KoboldCpp(BaseLlm):
         return {}
 
     def sanitize_response(self, response: str):
-        response = response.replace("\n", "").replace("  ", "").replace("´", "").replace("`", "").replace("```json", "").replace("```", "").strip()
+        response = response.replace("\\n", "").replace("\\", "").replace("  ", "").replace("```json", "").replace("```", "").replace("'results'", "\"results\"").replace("'text'", "\"text\"")
         return response

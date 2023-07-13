@@ -153,7 +153,6 @@ def init_toolkits(code_link, existing_toolkits, folder_path, organisation, sessi
     # Iterate over all subfolders
     for folder_name in os.listdir(folder_path):
         folder_dir = os.path.join(folder_path, folder_name)
-        print(f'init_toolkits {folder_dir}')
         if os.path.isdir(folder_dir):
             # sys.path.append(os.path.abspath('superagi/tools/email'))
             sys.path.append(folder_dir)
@@ -163,7 +162,6 @@ def init_toolkits(code_link, existing_toolkits, folder_path, organisation, sessi
                 if file_name.endswith(".py") and not file_name.startswith("__init__"):
                     # Get classes
                     classes = get_classes_in_file(file_path=file_path, clazz=BaseToolkit)
-                    print(f'init_toolkits {len(classes)} {file_name}' )
                     tool_name_to_toolkit = update_base_toolkit_info(classes, code_link, folder_name, new_toolkits,
                                                                     organisation, session, tool_name_to_toolkit)
     # Delete toolkits that are not present in the updated toolkits
@@ -173,7 +171,6 @@ def init_toolkits(code_link, existing_toolkits, folder_path, organisation, sessi
 
 def delete_extra_toolkit(existing_toolkits, new_toolkits, session):
     for toolkit in existing_toolkits:
-        print(f'deleting toolkit {toolkit}')
         if toolkit.name not in [new_toolkit.name for new_toolkit in new_toolkits]:
             session.query(Tool).filter(Tool.toolkit_id == toolkit.id).delete()
             session.query(ToolConfig).filter(ToolConfig.toolkit_id == toolkit.id).delete()
@@ -185,9 +182,7 @@ def delete_extra_toolkit(existing_toolkits, new_toolkits, session):
 def update_base_toolkit_info(classes, code_link, folder_name, new_toolkits, organisation, session,
                              tool_name_to_toolkit):
     for clazz in classes:
-        print(f' clazz in classes {clazz}')
         if clazz["class_name"] is not None:
-            print(f' clazz in classes 2 {clazz["class_name"]}')
             toolkit_name = clazz["toolkit_name"]
             toolkit_description = clazz["toolkit_description"]
             tools = clazz["toolkit_tools"]
@@ -201,7 +196,6 @@ def update_base_toolkit_info(classes, code_link, folder_name, new_toolkits, orga
                 organisation_id=organisation.id,
                 tool_code_link=code_link
             )
-            print(f'adding new toolkit {new_toolkit}')
             new_toolkits.append(new_toolkit)
             tool_mapping = {}
             # Store the tools in the database

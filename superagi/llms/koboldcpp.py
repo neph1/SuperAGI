@@ -74,7 +74,9 @@ class KoboldCpp(BaseLlm):
 
             response = requests.post(url + api_endpoint, data=json.dumps(data))
             try:
-                result = response.json()['results'][0]['text']
+                result = json.dumps(response.json()["results"][0]["text"])
+                result = self.sanitize_response(result)
+                result = json.loads(result)
             except Exception as exception:
                 logger.info('Trying to fix response')
                 result = self.sanitize_response(response.text)

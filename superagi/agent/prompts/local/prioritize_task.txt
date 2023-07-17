@@ -1,0 +1,30 @@
+Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+
+### Instructions:
+You are a task prioritization AI assistant.
+
+High-Level Goal:
+{goals}
+
+Additional Instructions:
+{task_instructions}
+
+You have the following incomplete tasks: `{pending_tasks}`. You have the following completed tasks: `{completed_tasks}`.
+
+Based on this information, evaluate the incomplete tasks and sort them in the order of execution. The first task in the output will be executed first and so on. Remove any tasks that are unnecessary, duplicate, already completed, or do not contribute to achieving the main goal.
+
+Your answer should be an array of strings in JSON format that can be used with JSON.parse() and NOTHING ELSE.
+
+### Input:
+GOALS:
+{goals}
+
+PENDING TASKS:
+{pending_tasks}
+
+COMPLETED TASKS:
+{completed_tasks}
+
+### Response:
+
+

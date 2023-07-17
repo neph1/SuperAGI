@@ -8,8 +8,15 @@ from superagi.agent.super_agi import SuperAgi
 from superagi.config.config import get_config
 from superagi.helper.encyption_helper import decrypt_data
 from superagi.lib.logger import logger
+<<<<<<< HEAD
+from superagi.llms.koboldcpp import KoboldCpp
+from superagi.llms.openai import OpenAi
+||||||| 44990836
+from superagi.llms.openai import OpenAi
+=======
 from superagi.llms.google_palm import GooglePalm
 from superagi.llms.llm_model_factory import get_model
+>>>>>>> main
 from superagi.models.agent import Agent
 from superagi.models.agent_config import AgentConfiguration
 from superagi.models.agent_execution import AgentExecution
@@ -234,7 +241,13 @@ class AgentExecutor:
                                               session=session)
 
         spawned_agent = SuperAgi(ai_name=parsed_config["name"], ai_role=parsed_config["description"],
+<<<<<<< HEAD
+                                 llm=self.get_llm(model=parsed_config["model"], model_api_key=model_api_key), tools=tools,
+||||||| 44990836
+                                 llm=OpenAi(model=parsed_config["model"], api_key=model_api_key), tools=tools,
+=======
                                  llm=get_model(model=parsed_config["model"], api_key=model_api_key), tools=tools,
+>>>>>>> main
                                  memory=memory,
                                  agent_config=parsed_config,
                                  agent_execution_config=parsed_execution_config)
@@ -304,9 +317,25 @@ class AgentExecutor:
                 tool.instructions = parsed_execution_config["instruction"]
             if hasattr(tool, 'llm') and (parsed_config["model"] == "gpt4" or parsed_config[
                 "model"] == "gpt-3.5-turbo") and tool.name != "QueryResource":
+<<<<<<< HEAD
+                tool.llm = self.get_llm(model="gpt-3.5-turbo", model_api_key=model_api_key, temperature=0.4)
+||||||| 44990836
+                tool.llm = OpenAi(model="gpt-3.5-turbo", api_key=model_api_key, temperature=0.4)
+=======
                 tool.llm = get_model(model="gpt-3.5-turbo", api_key=model_api_key, temperature=0.4)
+>>>>>>> main
             elif hasattr(tool, 'llm'):
+<<<<<<< HEAD
+                tool.llm = self.get_llm(model=parsed_config["model"], model_api_key=model_api_key, temperature=0.4)
+            if hasattr(tool, 'image_llm'):
+                tool.image_llm = self.get_llm(model=parsed_config["model"], model_api_key=model_api_key)
+||||||| 44990836
+                tool.llm = OpenAi(model=parsed_config["model"], api_key=model_api_key, temperature=0.4)
+            if hasattr(tool, 'image_llm'):
+                tool.image_llm = OpenAi(model=parsed_config["model"], api_key=model_api_key)
+=======
                 tool.llm = get_model(model=parsed_config["model"], api_key=model_api_key, temperature=0.4)
+>>>>>>> main
             if hasattr(tool, 'agent_id'):
                 tool.agent_id = agent_id
             if hasattr(tool, 'agent_execution_id'):
@@ -372,3 +401,12 @@ class AgentExecutor:
         if resource is None:
             return False
         return True
+
+    def get_llm(self, model, backend='OpenAi', model_api_key='', temperature=0.3, max_tokens=get_config("MAX_MODEL_TOKEN_LIMIT")):
+        if get_config("BACKEND") == 'OpenAi':
+            return OpenAi(model=model, api_key=model_api_key, temperature=temperature, max_tokens=max_tokens)
+        elif get_config("BACKEND") == 'KoboldCpp':
+            return KoboldCpp(model=model, temperature=temperature, api_key='', max_tokens=max_tokens)
+        else :
+            logger.info("Backend not supported")
+        

@@ -1,0 +1,33 @@
+Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+
+### Instructions:
+You are an AI assistant tasked with creating tasks.
+
+High-Level Goal:
+{goals}
+
+Additional Instructions:
+{task_instructions}
+
+You have the following incomplete tasks: `{pending_tasks}`. You have the following completed tasks: `{completed_tasks}`.
+
+Based on this information, create a single task to be completed by your AI system ONLY IF REQUIRED to get closer to or fully achieve the high-level goal. Do not create any task if it is already covered in incomplete or completed tasks. Ensure your new task does not deviate from the goal.
+
+Your answer should be an array of strings, suitable for utilization with JSON.parse(). Return an empty array if no new task is required.
+
+### Input:
+GOALS:
+{goals}
+
+PENDING TASKS:
+{pending_tasks}
+
+COMPLETED TASKS:
+{completed_tasks}
+
+ADDITIONAL INSTRUCTIONS:
+{task_instructions}
+
+### Response:
+
+

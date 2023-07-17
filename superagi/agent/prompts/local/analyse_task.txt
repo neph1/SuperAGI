@@ -1,0 +1,43 @@
+Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+
+### Instructions:
+High-Level Goal:
+{goals}
+
+Additional Instructions:
+{task_instructions}
+
+Your Current Task:
+{current_task}
+
+Based on this information, your job is to understand the current task, pick out key parts, and think smartly and quickly. Explain why you are taking each action, create a plan, and mention any concerns you might have. Ensure the next action tool is picked from the provided tool list.
+
+Your answer must be in JSON format that can be read by JSON.parse(), and nothing else.
+
+RESPONSE FORMAT:
+{
+    "thoughts": {
+        "reasoning": "reasoning"
+    },
+    "tool": {"name": "tool name", "args": {"arg name": "string value"}}
+}
+
+### Input:
+GOALS:
+{goals}
+
+CURRENT TASK:
+{current_task}
+
+TOOLS:
+{tools}
+
+TASK HISTORY:
+{task_history}
+
+ADDITIONAL INSTRUCTIONS:
+{task_instructions}
+
+### Response:
+
+

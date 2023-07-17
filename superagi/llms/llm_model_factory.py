@@ -1,5 +1,6 @@
 from superagi.llms.google_palm import GooglePalm
 from superagi.llms.openai import OpenAi
+from superagi.llms.koboldcpp import KoboldCpp
 
 
 class ModelFactory:
@@ -20,7 +21,7 @@ factory = ModelFactory()
 factory.register_format("gpt-4", lambda **kwargs: OpenAi(model="gpt-4", **kwargs))
 factory.register_format("gpt-3.5-turbo", lambda **kwargs: OpenAi(model="gpt-3.5-turbo", **kwargs))
 factory.register_format("google-palm-bison-001", lambda **kwargs: GooglePalm(model='models/chat-bison-001', **kwargs))
-
+factory.register_format("local", lambda **kwargs: KoboldCpp(model="local", **kwargs))
 
 def get_model(api_key, model="gpt-3.5-turbo", **kwargs):
     return factory.get_model(model, api_key=api_key, **kwargs)

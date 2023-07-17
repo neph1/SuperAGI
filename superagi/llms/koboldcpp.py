@@ -10,7 +10,7 @@ from superagi.config.config import get_config
 from superagi.lib.logger import logger
 
 class KoboldCpp(BaseLlm):
-    def __init__(self, api_key, image_model=None, model="", temperature=0.6, max_tokens=get_config("MAX_MODEL_TOKEN_LIMIT"), top_p=1,
+    def __init__(self, api_key, model="", temperature=0.6, max_tokens=get_config("MAX_MODEL_TOKEN_LIMIT"), top_p=1,
                  frequency_penalty=0,
                  presence_penalty=0, number_of_results=80):
         self.temperature = temperature
@@ -22,6 +22,17 @@ class KoboldCpp(BaseLlm):
         self.endpoint = get_config("CUSTOM_ENDPOINT")
 
 
+    
+    def get_source(self):
+        return "koboldcpp"
+
+    def get_api_key(self):
+        """
+        Returns:
+            str: The API key.
+        """
+        return self.api_key
+
     def get_model(self):
         """
         Returns:
@@ -29,13 +40,6 @@ class KoboldCpp(BaseLlm):
         """
         return self.model
 
-
-    def get_image_model(self):
-        """
-        Returns:
-            str: The image model.
-        """
-        return self.image_model
 
     def chat_completion(self, messages, max_tokens=get_config("MAX_MODEL_TOKEN_LIMIT")):
         """

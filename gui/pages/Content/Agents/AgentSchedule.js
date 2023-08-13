@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {setLocalStorageValue, convertToGMT} from "@/utils/utils";
+import {setLocalStorageValue, convertToGMT, preventDefault} from "@/utils/utils";
 import styles from "@/pages/Content/Agents/Agents.module.css";
 import styles1 from "@/pages/Content/Agents/react-datetime.css";
 import Image from "next/image";
@@ -9,7 +9,15 @@ import {agentScheduleComponent, createAndScheduleRun, updateSchedule} from "@/pa
 import {EventBus} from "@/utils/eventBus";
 import moment from 'moment';
 
-export default function AgentSchedule({internalId, closeCreateModal, type, agentId, setCreateModal, setCreateEditModal, env}) {
+export default function AgentSchedule({
+                                        internalId,
+                                        closeCreateModal,
+                                        type,
+                                        agentId,
+                                        setCreateModal,
+                                        setCreateEditModal,
+                                        env,
+                                      }) {
   const [isRecurring, setIsRecurring] = useState(false);
   const [timeDropdown, setTimeDropdown] = useState(false);
   const [expiryDropdown, setExpiryDropdown] = useState(false);
@@ -129,10 +137,6 @@ export default function AgentSchedule({internalId, closeCreateModal, type, agent
     setLocalStorageValue("agent_expiry_runs_" + String(internalId), event.target.value, setExpiryRuns);
   };
 
-  const preventDefault = (e) => {
-    e.stopPropagation();
-  };
-
   const addScheduledAgent = () => {
     if ((startTime === '' || (isRecurring === true && (timeValue == null || (expiryType === "After certain number of runs" && (parseInt(expiryRuns, 10) < 1)) || (expiryType === "Specific date" && expiryDate == null))))) {
       toast.error('Please input correct details', {autoClose: 1800});
@@ -162,8 +166,10 @@ export default function AgentSchedule({internalId, closeCreateModal, type, agent
             const {schedule_id} = response.data;
             toast.success('Scheduled successfully!', {autoClose: 1800});
             setCreateModal();
-            EventBus.emit('refreshDate', {});
             EventBus.emit('reFetchAgents', {});
+            setTimeout(() => {
+                EventBus.emit('refreshDate', {});
+            }, 1000)
           })
           .catch(error => {
             console.error('Error:', error);

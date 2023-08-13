@@ -1,11 +1,11 @@
-import importlib
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from fastapi import HTTPException
 from sqlalchemy.orm import sessionmaker
 
+from superagi.models.workflows.iteration_workflow import IterationWorkflow
 from superagi.worker import execute_agent
-from superagi.models.agent_workflow import AgentWorkflow
+from superagi.models.workflows.agent_workflow import AgentWorkflow
 from superagi.models.agent import Agent
 from superagi.models.agent_config import AgentConfiguration
 from superagi.models.agent_execution import AgentExecution
@@ -36,11 +36,15 @@ class ScheduledAgentExecutor:
 
 
 
-        start_step_id = AgentWorkflow.fetch_trigger_step_id(session, agent.agent_workflow_id)
+        start_step = AgentWorkflow.fetch_trigger_step_id(session, agent.agent_workflow_id)
+        iteration_step_id = IterationWorkflow.fetch_trigger_step_id(session,
+                                                                    start_step.action_reference_id).id if start_step.action_type == "ITERATION_WORKFLOW" else -1
+
         db_agent_execution = AgentExecution(status="RUNNING", last_execution_time=datetime.now(),
                                             agent_id=agent_id, name=name, num_of_calls=0,
                                             num_of_tokens=0,
-                                            current_step_id=start_step_id)
+                                            current_agent_step_id=start_step.id,
+                                            iteration_workflow_step_id=iteration_step_id)
 
         session.add(db_agent_execution)
         session.commit()
@@ -60,7 +64,6 @@ class ScheduledAgentExecutor:
         organisation = agent.get_agent_organisation(session)
         model = session.query(AgentConfiguration.value).filter(AgentConfiguration.agent_id == agent_id).filter(AgentConfiguration.key == 'model').first()[0]
         EventHandler(session=session).create_event('run_created', {'agent_execution_id': db_agent_execution.id,'agent_execution_name':db_agent_execution.name}, agent_id, organisation.id if organisation else 0),
-        EventHandler(session=session).create_event('agent_created', {'agent_name': agent.name, 'model': model}, agent_id, organisation.id if organisation else 0)
 
         session.commit()
 

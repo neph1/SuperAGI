@@ -14,9 +14,12 @@ import {
   validateAccessToken,
   checkEnvironment,
   addUser,
-  installToolkitTemplate, installAgentTemplate
+  installToolkitTemplate, installAgentTemplate, installKnowledgeTemplate
 } from "@/pages/api/DashboardService";
 import {githubClientId} from "@/pages/api/apiConfig";
+import {
+  getGithubClientId
+} from "@/pages/api/DashboardService";
 import {useRouter} from 'next/router';
 import querystring from 'querystring';
 import {refreshUrl, loadingTextEffect} from "@/utils/utils";
@@ -33,7 +36,18 @@ export default function App() {
   const [loadingText, setLoadingText] = useState("Initializing SuperAGI");
   const router = useRouter();
   const [showMarketplace, setShowMarketplace] = useState(false);
-  const excludedKeys = ['repo_starred', 'popup_closed_time', 'twitter_toolkit_id', 'accessToken', 'agent_to_install', 'toolkit_to_install', 'google_calendar_toolkit_id', 'myLayoutKey'];
+  const excludedKeys = [
+    'repo_starred',
+    'popup_closed_time',
+    'twitter_toolkit_id',
+    'accessToken',
+    'agent_to_install',
+    'toolkit_to_install',
+    'google_calendar_toolkit_id',
+    'knowledge_to_install',
+    'knowledge_index_to_install',
+    'myLayoutKey'
+  ];
 
   function fetchOrganisation(userId) {
     getOrganisation(userId)
@@ -48,6 +62,20 @@ export default function App() {
   const installFromMarketplace = () => {
     const toolkitName = localStorage.getItem('toolkit_to_install') || null;
     const agentTemplateId = localStorage.getItem('agent_to_install') || null;
+    const knowledgeTemplateName = localStorage.getItem('knowledge_to_install') || null;
+    const knowledgeIndexId = localStorage.getItem('knowledge_index_to_install') || null;
+
+    if (knowledgeTemplateName !== null && knowledgeIndexId !== null) {
+      installKnowledgeTemplate(knowledgeTemplateName, knowledgeIndexId)
+        .then((response) => {
+          toast.success("Template installed", {autoClose: 1800});
+        })
+        .catch((error) => {
+          console.error('Error installing template:', error);
+        });
+      localStorage.removeItem('knowledge_to_install');
+      localStorage.removeItem('knowledge_index_to_install');
+    }
 
     if (toolkitName !== null) {
       installToolkitTemplate(toolkitName)
@@ -153,9 +181,20 @@ export default function App() {
     setSelectedView(data);
   };
 
-  function signInUser() {
-    const github_client_id = githubClientId();
-    window.open(`https://github.com/login/oauth/authorize?scope=user:email&client_id=${github_client_id}`, '_self')
+  async function signInUser() {
+    let github_client_id = githubClientId();
+
+      // If `github_client_id` does not exist, make the API call
+      if (!github_client_id) {
+        const response = await getGithubClientId();
+        github_client_id = response.data.github_client_id;
+      }
+      if(!github_client_id) {
+         console.error('Error fetching github client id make sure to set it in the config file');
+      }
+      else {
+        window.open(`https://github.com/login/oauth/authorize?scope=user:email&client_id=${github_client_id}`, '_self')
+      }
   }
 
   useEffect(() => {
@@ -189,7 +228,7 @@ export default function App() {
       {showMarketplace && <div className="projectStyle"><MarketplacePublic env={env}/></div>}
       {applicationState === 'AUTHENTICATED' && !showMarketplace ? (<div className="projectStyle">
         <div className="sideBarStyle">
-          <SideBar onSelectEvent={handleSelectionEvent}/>
+          <SideBar onSelectEvent={handleSelectionEvent} env={env}/>
         </div>
         <div className="workSpaceStyle">
           <div className="topBarStyle">
